@@ -24,21 +24,46 @@ namespace Store.Services
             return categoryModels;
         }
 
-        public Category Add(CategoryModel categoryModel)
+        //todo
+        public CategoryModel Add(CategoryModel categoryModel)
         {
+            //check if duplicate name
+            // if yes, return null
+            var categoryNameExists = categoryRepository.IsDuplicateCategoryName(categoryModel.CategoryName);
+
+            if (categoryNameExists)//category name exista DEJA
+            {
+                return null;
+            }
+
             var categoryToAdd = mapper.Map<Category>(categoryModel);
-            return categoryRepository.Add(categoryToAdd);
+
+            var newCategory = categoryRepository.Add(categoryToAdd);
+
+            return mapper.Map<CategoryModel>(newCategory);
         }
 
-        public Category GetCategory(int id)
+        //todo
+        public CategoryModel GetCategory(int id)
         {
-            throw new NotImplementedException();
+            // call methods from repository
+            var categoryById = categoryRepository.GetCategory(id);
+            return mapper.Map<CategoryModel>(categoryById);
         }
 
-        public Category Update(CategoryModel categoryModel)
+        public CategoryModel? Update(CategoryModel categoryModel)
         {
-            var categoryToUpdate = mapper.Map<Category>(categoryModel);
-            return categoryRepository.Update(categoryToUpdate);
+            var existingItem = categoryRepository.GetCategory(categoryModel.Categoryid);
+
+            if (existingItem == null)
+            {
+                return null;
+            }
+
+            var categoryToUpdate = mapper.Map(categoryModel, existingItem);
+
+            var categoryFromDb = categoryRepository.Update(categoryToUpdate);
+            return mapper.Map<CategoryModel>(categoryFromDb);
         }
 
         public bool Delete(int id)
@@ -48,7 +73,7 @@ namespace Store.Services
             if (itemsToDelete != null)
             {
                 //don't delete items if they have products
-                if(itemsToDelete.Products.Count > 0)
+                if (itemsToDelete.Products.Count > 0)
                 {
                     return false;
                 }
@@ -59,10 +84,11 @@ namespace Store.Services
             return deleted;
         }
 
+        //todo
         public bool CheckIfExists(int id)
         {
-            // call methods from repository
-            throw new NotImplementedException();
+            // call methods from repository to check if exists
+            return categoryRepository.CheckIfExists(id);
         }
     }
 }
